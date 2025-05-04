@@ -1,12 +1,13 @@
 from enum import Enum
 from typing import Annotated, Literal
 
-from fastapi import FastAPI, Body, Query
-from pydantic import BaseModel
+from fastapi import Body, FastAPI, Query
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
 
+# query parameters
 class Notification(str, Enum):
     email = "email"
     whatsapp = "whatsapp"
@@ -15,18 +16,26 @@ class Notification(str, Enum):
 
 class FilterParams(BaseModel):
     model_config = {"extra": "ignore"}
-    notify: Notification
+    notify: Notification = Field(title="Way to notify that a task has been created", description="There are three different options")
     sync: Literal["now", "later", "never"] = "now"
 
 
+# Body with nested models
 class Action(BaseModel):
-    laucher: str
+    laucher: str=Field(max_length=8)
     args: str
 
 
 class Task(BaseModel):
-    name: str
-    description: str
+    name: str = Field(
+        title="The name of the given task",
+        description="Tells what the task is, in a compacted form",
+    )
+    description: str|None = Field(
+        default=None,
+        title="The description of the task",
+        description="tells the details of a given task or the purpose of it",
+    )
     time: str  # this should be datetime
     action: Action
 
